@@ -3,7 +3,7 @@ import { OrderType } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import Image from "next/image";
 
 const OrdersPage = () => {
 
@@ -22,6 +22,13 @@ const OrdersPage = () => {
   })
 
   if (isLoading || status === "loading") return 'Loading...'
+
+  const handleUpdate = (e: React.FormEvent<HTMLFormElement>, orderId: string) => {
+    e.preventDefault()
+    const form = e.target as HTMLFormElement;
+    const input = form.elements[0] as HTMLInputElement;
+    const status = input.value
+  }
   
   return (
     <div className="p-4 lg:px-20 xl:px-40">
@@ -36,13 +43,37 @@ const OrdersPage = () => {
           </tr>
         </thead>
         <tbody>
-          {data?.map((order: OrderType, index: number) => (
-            <tr className="text-sm md:text-base bg-red-50" key={index}>
-              <td className="hidden md:block py-6 px-1">1237861238721</td>
-              <td className="py-6 px-1">19.07.2023</td>
-              <td className="py-6 px-1">89.90</td>
-              <td className="hidden md:block py-6 px-1">Big Burger Menu (2), Veggie Pizza (2), Coca Cola 1L (2)</td>
-              <td className="py-6 px-1">On the way (approx. 10min)...</td>
+          {data?.map((order: OrderType) => (
+            <tr className="text-sm md:text-base bg-red-50" key={order.id}>
+              <td className="hidden md:block py-6 px-1">{order.id}</td>
+              <td className="py-6 px-1">
+                {order.createdAt.toString().slice(0,10)}
+              </td>
+              <td className="py-6 px-1">{order.price}</td>
+              <td className="hidden md:block py-6 px-1">
+                {order.products[0].title}
+              </td>
+              {session?.user.isAdmin ? (
+                <td>
+                  <form 
+                    className="flex items-center justify-center gap-4"
+                  onSubmit={(e) => handleUpdate(e, order.id)}
+                  >
+                    <input 
+                      placeholder={order.status} 
+                      className="p-2 ring-1 ring-red-100 rounded-md"
+                    />
+                    <button 
+                      type="submit"
+                      title="Edit" 
+                      className="bg-red-400 p-2 rounded-full"
+                    >
+                      <Image src="/cart.png" alt ="" width={20} height={20} />
+                    </button>
+                  </form>
+                </td>
+              ) : (<td className="py-6 px-1">{order.status}</td>)
+              }
             </tr>
           ))}
         </tbody>
